@@ -1,0 +1,11 @@
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    title Google Auth デモ
+  body
+    .notice = notice
+    .alert = alert
+    == yield
+    = form_with url: destroy_user_session_path, method: :delete do |f|
+      = f.submit 'ログアウト'

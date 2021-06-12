@@ -1,0 +1,49 @@
+name: Ruby
+on:
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: postgres:9.6
+        ports:
+          - 5432:5432
+        env:
+          RAILS_ENV: test
+          POSTGRES_UESR: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    container:
+      image: ruby:2.7.1
+      env:
+        RAILS_ENV: test
+        POSTGRES_DATABASE_UESR: postgres
+        POSTGRES_DATABASE_PASSWORD: postgres
+        POSTGRES_HOST: db
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: '12'
+
+    - name: Bundle Install
+      run: bundle install --path=vendor/bundle --jobs 4 --retry 3
+
+    - name: Set DB
+      run: |
+        bundle exec rails db:create
+        bundle exec rails db:migrate
+      env:
+        RAILS_ENV: test
+    - name: Run Test
+      run: |
+        bundle exec rspec
+    - name: Run Rubocop
+      run: |
+        bundle exec rubocop
